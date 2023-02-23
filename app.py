@@ -14,6 +14,13 @@ tracer = trace.get_tracer(__name__)
 span_processor = BatchSpanProcessor(exporter)
 trace.get_tracer_provider().add_span_processor(span_processor)
 
+try:
+   with tracer.start_as_current_span("Hello %s" % name) as span:
+      # This exception will be automatically recorded
+      raise Exception("Custom exception message.")
+   except Exception:
+      print("Exception raised") 
+
 @app.route('/')
 def index():
    print('Request for index page received')
@@ -28,12 +35,6 @@ def favicon():
 def hello():
    name = request.form.get('name')
    if name:
-       try:
-          with tracer.start_as_current_span("Hello %s" % name) as span:
-              # This exception will be automatically recorded
-              raise Exception("Custom exception message.")
-       except Exception:
-          print("Exception raised") 
        print('Request for hello page received with name=%s' % name)
        return render_template('hello.html', name = name)
    else:
